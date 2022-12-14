@@ -22,6 +22,7 @@ validate groupings
 def get_german_credit():
     df = acquire_german_credit()
     df = category_adjustments(df)
+    df = bin_age(df)
     train, validate, test = split_german_credit(df)
     
     return train, validate, test
@@ -59,16 +60,30 @@ def category_adjustments(df):
         if (df[col].dtype == object):
             df[col] = df[col].astype('category')
     
-    df['checking account'] = df['checking account'].cat.set_categories(['unknown','little', 'moderate', 'rich'], ordered = True)
-    df['saving accounts'] = df['saving accounts'].cat.set_categories(
-        ['unknown', 'little', 'moderate', 'rich', 'quite rich'], ordered = True)
     
     df['risk'] = df.risk.map({'good':1, 'bad':0})
     df['sex'] = df.sex.map({'male':1, 'female':0})
+    df['job'] = df.job.map({0:'unskilled_nonresident', 1:'unskilled', 2: 'skilled', 3: 'high_skill'})
+    df['job'] = df['job'].astype('category')
 
+    df['checking account'] = df['checking account'].cat.set_categories(['unknown','little', 'moderate', 'rich'], ordered = True)
+    df['saving accounts'] = df['saving accounts'].cat.set_categories(
+        ['unknown', 'little', 'moderate', 'rich', 'quite rich'], ordered = True)
+    df['job'] = df['job'].cat.set_categories(['unskilled_nonresident', 'unskilled', 'skilled', 'high_skill'], ordered = True)
 
     df['sex'] = df['sex'].astype(int)
     df['risk'] = df['risk'].astype(int)
+    return df
+
+
+def bin_age(df):
+    #creating bins for ages
+
+    age_groups = (19,26,33,45,75)
+    age_categories = ['early_life','early_established','established','older']
+
+    df['age_groups'] = pd.cut(df['age'],age_groups, labels=age_categories)
+
     return df
 
 

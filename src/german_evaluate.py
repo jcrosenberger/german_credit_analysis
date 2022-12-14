@@ -7,7 +7,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 # selected functions from Data Science libraries
-from scipy.stats import spearmanr, pearsonr, f_oneway
+from scipy.stats import spearmanr, pearsonr, f_oneway, chi2_contingency
 
 # libraries for convenience
 pd.options.display.float_format = '{:,.3f}'.format
@@ -47,13 +47,56 @@ def pearson_test_df(df, target_var, test_var_list):
     return pearson_df
 
 
-##############################################
-######      Categorical Test DataFrame      ########
-##############################################
+##############################################################
+######      Categorical Test DataFrame (2 versions)     ########
+##############################################################
+
+#######       Chi^2 is the easier test to use       #######
+def chi2_categorical_test(df, target_var, test_var_list):
+    '''
+    The chi2 test is used to determine if a statistically significant relationship 
+    exists between two categorical variables
+    
+    This function takes in a list of variables to test against a singular target variable
+    returning a dataframe which should help to determine if the list of variables should
+    be accepted or rejected for use in a model to explain the target variable
+    '''
+    
+    chi2_df = pd.DataFrame(
+        {'Potential_Feature':[],
+         'Chi2_stat' :[],
+         'P-Value' : [],
+         'Significance' : [],
+         'Keep' : [],})
+    
+    
+    for item in test_var_list:
+        ctab = pd.crosstab(df[item],df[target_var])
+        chi, p_value, degf, expected = chi2_contingency(ctab)
+        
+        if 1 - p_value >= 0.95:
+            keeper = 'Yes'
+        else:
+            keeper = 'No'
+            
+        chi2_df = chi2_df.append(
+        {'Potential_Feature': item,
+         'Chi2_stat' : chi,
+         'P-Value' : p_value,
+         'Significance' : 1-p_value,
+         'Keep' : keeper},
+         ignore_index = True)
+        
+    return chi2_df
+
+
+#######       F One way is the more difficult to implement       #######
+
 def ftest_df(df):
     ftest_df = pd.DataFrame(
         {'Potential_Feature':[],
          'F-stat':[],
+         'P-Value':[],
          'Significance':[],
          'Keep':[]})
     
@@ -66,6 +109,7 @@ def ftest_df(df):
     ftest_df = ftest_df.append(
         {'Potential_Feature':'housing',
          'F-stat':f,
+         'P-Value':p,
          'Significance':1-p,
          'Keep':keeper},
         ignore_index = True)
@@ -80,6 +124,7 @@ def ftest_df(df):
     ftest_df = ftest_df.append(
         {'Potential_Feature':'checking',
          'F-stat':f,
+         'P-Value':p,
          'Significance':1-p,
          'Keep':keeper},
         ignore_index = True)
@@ -94,11 +139,42 @@ def ftest_df(df):
     ftest_df = ftest_df.append(
         {'Potential_Feature':'savings',
          'F-stat': f,
+         'P-Value':p,
          'Significance':1-p,
          'Keep':keeper},
-        ignore_index = True)
+          ignore_index = True)
         
+    
+    f, p = ftest_job(df)
+    if 1 - p >= 0.95:
+        keeper = 'Yes'
+    else:
+        keeper = 'No'
+
+    ftest_df = ftest_df.append(
+        {'Potential_Feature':'job',
+        'F-stat':f,
+        'P-Value':p,
+        'Significance':1-p,
+        'Keep':keeper},
+        ignore_index = True)
+
+    f, p = ftest_age(df)
+    if 1 - p >= 0.95:
+        keeper = 'Yes'
+    else:
+        keeper = 'No'
+
+    ftest_df = ftest_df.append(
+        {'Potential_Feature':'age_groups',
+        'F-stat':f,
+        'P-Value':p,
+        'Significance':1-p,
+        'Keep':keeper},
+        ignore_index = True)
+
     return ftest_df
+
 
 #######       Categorical Test Functions       #######
 def ftest_housing(df):
@@ -131,6 +207,28 @@ def ftest_checking(df):
                    df[df['checking account'] == 'moderate'].risk, 
                    df[df['checking account'] == 'rich'].risk) 
                                        
+    #print(f'F-statistics: {round(f, 3)}, p: {round(1-p, 3)}')
+    return f, p
+
+def ftest_job(df):
+    #f, p = f_oneway(df[df[var] 
+    
+    f, p = f_oneway(df[df['job'] == 'skilled'].risk, 
+                   df[df['job'] == 'unskilled'].risk,
+                   df[df['job'] == 'unskilled_nonresident'].risk,
+                   df[df['job'] == 'high_skill'].risk)
+                    
+    #print(f'F-statistics: {round(f, 3)}, p: {round(1-p, 3)}')
+    return f, p
+
+def ftest_age(df):
+    #f, p = f_oneway(df[df[var] 
+    
+    f, p = f_oneway(df[df['age_groups'] == 'early_life'].risk, 
+                   df[df['age_groups'] == 'early_established'].risk,
+                   df[df['age_groups'] == 'established'].risk,
+                   df[df['age_groups'] == 'older'].risk)
+                    
     #print(f'F-statistics: {round(f, 3)}, p: {round(1-p, 3)}')
     return f, p
 
