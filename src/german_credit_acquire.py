@@ -50,18 +50,25 @@ def split_german_credit(df):
 def category_adjustments(df):
 
     df.columns = df.columns.str.lower()
-    df['checking account'] = df['checking account'].replace({np.NAN:'unknown'})
-    df['saving accounts'] = df['saving accounts'].replace({np.NAN:'unknown'})
-    
+    #df['checking account'] = df['checking account'].replace({np.NAN:'unknown'})
+    #df['saving accounts'] = df['saving accounts'].replace({np.NAN:'unknown'})
+    df['checking account'].fillna('unknown', inplace=True)
+    df['saving accounts'].fillna('unknown', inplace=True)
+
     for col in df.columns:
         if (df[col].dtype == object):
             df[col] = df[col].astype('category')
     
-    df['checking account'] = df['checking account'].cat.set_categories(['none','little', 'moderate', 'rich'], ordered = True)
+    df['checking account'] = df['checking account'].cat.set_categories(['unknown','little', 'moderate', 'rich'], ordered = True)
     df['saving accounts'] = df['saving accounts'].cat.set_categories(
-        ['none', 'little', 'moderate', 'rich', 'quite rich'], ordered = True)
+        ['unknown', 'little', 'moderate', 'rich', 'quite rich'], ordered = True)
     
     df['risk'] = df.risk.map({'good':1, 'bad':0})
+    df['sex'] = df.sex.map({'male':1, 'female':0})
+
+
+    df['sex'] = df['sex'].astype(int)
+    df['risk'] = df['risk'].astype(int)
     return df
 
 
