@@ -83,7 +83,7 @@ def bin_age(df):
     age_categories = ['early_life','early_established','established','older']
 
     df['age_groups'] = pd.cut(df['age'],age_groups, labels=age_categories)
-
+    del df['age']
     return df
 
 
