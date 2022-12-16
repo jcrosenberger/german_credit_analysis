@@ -4,7 +4,8 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 
 
-
+# setting random seed to 7
+np.random.seed(7)
 
 
 
@@ -22,13 +23,15 @@ validate groupings
 def get_german_credit():
     df = acquire_german_credit()
     df = category_adjustments(df)
-    df = bin_age(df)
+    df = bin_features(df)
     train, validate, test = split_german_credit(df)
     
+    
     return train, validate, test
-
+    
 
 #######       Acquire German Credit Data       #######
+
 def acquire_german_credit():
 
     df = pd.read_csv('data/german_credit_data.csv', index_col = 0)
@@ -38,6 +41,7 @@ def acquire_german_credit():
 
 
 #######       Splits dataframe for scientific process       #######
+
 def split_german_credit(df):
     #splits dataframe into two groups, group 1 and 2, 2 is the test group and will not be explored
     train_validate, test = train_test_split(df, test_size = 0.2)
@@ -48,6 +52,7 @@ def split_german_credit(df):
 
 
 #######       Engineering DataFrame       #######
+
 def category_adjustments(df):
 
     df.columns = df.columns.str.lower()
@@ -76,14 +81,70 @@ def category_adjustments(df):
     return df
 
 
-def bin_age(df):
-    #creating bins for ages
+#######       bin features in for model      #######
 
-    age_groups = (19,26,33,45,75)
+def bin_features(df): 
+
+    # the first number is the minimum value of the first group, the last number is the maximum value of the last group
+    # the total number of groups is the length of the list - 1
+    
+    #creating bins for age
+    age_groups = (18,26,33,45,76)
     age_categories = ['early_life','early_established','established','older']
-
     df['age_groups'] = pd.cut(df['age'],age_groups, labels=age_categories)
     del df['age']
+
+    #creating bins for loan duration
+    duration_groups = (0, 11, 12, 35, 36, 100)
+    duration_names = ('short_term_loan', 'one_year_loan','medium_term_loan', 'three_year_loan', 'long_term_loan')
+    df['loan_duration_groups'] = pd.cut(df['duration'], duration_groups, labels = duration_names)
+    del df['duration']
+
     return df
 
 
+##############################################################
+  ############       Secondary Function       ##############
+######  Splits Model into prepared X and Y dataframes  ######
+##############################################################
+
+def german_credit_x_y(target):
+    '''
+    This function depends on the split function, being handed a dataframe
+    and the target variable we are seeking to understand through prediction
+    '''
+
+    # calls split function to produce required variables
+    train, validate, test = get_german_credit()
+
+    #for i in [train, validate, test]:
+    #    i = get_dummies(i)
+    train = get_dummies(train)
+    validate = get_dummies(validate)
+    test = get_dummies(test)
+
+    x_train = train.drop(columns=[target])
+    y_train = train[target]
+    
+    x_validate = validate.drop(columns=[target])
+    y_validate = validate[target]
+    
+    x_test = test.drop(columns=[target])
+    y_test = test[target]
+    
+    return x_train, y_train, x_validate, y_validate, x_test, y_test 
+
+
+#######       get_dummies      #######
+
+def get_dummies(df):
+    
+    #dummy_list = ['job', 'housing', 'saving accounts', 'checking account', 'purpose', 'age_groups']
+    dummy_list = ['housing', 'saving accounts', 'checking account', 'purpose', 'age_groups', 'loan_duration_groups']
+    del df['job']
+
+
+    for items in dummy_list:
+        df = pd.get_dummies(data=df, columns=[items])
+
+    return df 

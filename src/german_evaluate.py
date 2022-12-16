@@ -12,7 +12,7 @@ from scipy.stats import spearmanr, pearsonr, f_oneway, chi2_contingency
 # libraries for convenience
 pd.options.display.float_format = '{:,.3f}'.format
 
-
+np.random.seed(7)
 
 
 ##############################################
@@ -52,6 +52,7 @@ def pearson_test_df(df, target_var, test_var_list):
 ##############################################################
 
 #######       Chi^2 is the easier test to use       #######
+
 def chi2_categorical_test(df, target_var, test_var_list):
     '''
     The chi2 test is used to determine if a statistically significant relationship 
@@ -62,12 +63,8 @@ def chi2_categorical_test(df, target_var, test_var_list):
     be accepted or rejected for use in a model to explain the target variable
     '''
     
-    chi2_df = pd.DataFrame(
-        {'Potential_Feature':[],
-         'Chi2_stat' :[],
-         'P-Value' : [],
-         'Significance' : [],
-         'Keep' : [],})
+    chi2_df = pd.DataFrame(columns =[
+         'Potential_Feature', 'Chi2_stat', 'P-Value', 'Significance', 'Keep'])
     
     
     for item in test_var_list:
@@ -79,15 +76,12 @@ def chi2_categorical_test(df, target_var, test_var_list):
         else:
             keeper = 'No'
             
-        chi2_df = chi2_df.append(
-        {'Potential_Feature': item,
-         'Chi2_stat' : chi,
-         'P-Value' : p_value,
-         'Significance' : 1-p_value,
-         'Keep' : keeper},
-         ignore_index = True)
+        # potential = item, 
+        # significance = 1-p_value
+        # keep = keeper
+        chi2_df.loc[len(chi2_df)] = [item, chi, p_value, 1-p_value, keeper]
         
-    return chi2_df
+    return chi2_df.sort_values(by='Keep', ascending = False)
 
 
 #######       F One way is the more difficult to implement       #######
@@ -231,6 +225,22 @@ def ftest_age(df):
                     
     #print(f'F-statistics: {round(f, 3)}, p: {round(1-p, 3)}')
     return f, p
+
+
+######################################################################
+##########       Determine Baseline for model to beat      ##########
+######################################################################
+
+def baseline(df,var):
+    ''' Method calculates the minimum odds that a model will need to beat,
+    based on the target variable and the dataframe passed in
+    '''
+
+    if (df[var].value_counts(normalize=True))[0] > (df[var].value_counts(normalize=True))[1]:
+        baseline = (df[var].value_counts(normalize=True))[0]
+    else: 
+        baseline = (df[var].value_counts(normalize=True))[1]
+    return baseline
 
 
 ###########################################################################
