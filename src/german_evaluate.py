@@ -291,3 +291,10 @@ def plot_duration(df):
 
         sns.histplot(x= i['Duration'], hue = i['Risk'])
         plt.show()
+
+
+def job_credit_relationship(df):
+    sns.barplot(data = df, y = 'credit amount', x = 'job', palette="tab20_r", hue = 'risk')
+    plt.text(-0., 8_000, 'Red was considered low risk', fontsize = 16)
+    plt.title('Job relation with credit amount extended', fontsize = 22)
+    plt.show()
