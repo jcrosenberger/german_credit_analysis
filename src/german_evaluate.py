@@ -263,8 +263,9 @@ def correlate_viz(df, target):
 
 def age_distribution(df):
     plt.figure(figsize=(10,6))
-    sns.histplot(data=df, x='Age',hue='Risk', kde=True, bins=25, palette='hsv_r')
+    sns.histplot(data=df, x='age',hue='risk', kde=True, bins=25, palette='hsv_r')
     plt.show()
+
 
 def age_group_risk(df):
     plt.figure(figsize=(8,5))
@@ -272,26 +273,29 @@ def age_group_risk(df):
     plt.ylabel('Credit per group')
     plt.show()
 
+
 def peek_at_risk(df):
-    for col in df.columns:
+    columns = ['job', 'housing', 'saving accounts', 'checking account', 'credit amount', 'age_groups']
+    for col in columns:
         sns.histplot(data = df, x = col, hue = 'risk')
+        plt.title(f"'{col}' distribution, where 1 is low risk", fontsize = 16)
         plt.show()
 
 
 def plot_duration(df):
-    a = df[(df['Duration'] < 12)]
-    b = df[(df['Duration'] == 12)]
-    c = df[(df['Duration'] > 12) & (df['Duration'] < 36)]
-    d = df[(df['Duration'] == 36)]
-    e = df[(df['Duration'] > 36)]
+    a = df[(df['duration'] < 12)]
+    b = df[(df['duration'] == 12)]
+    c = df[(df['duration'] > 12) & (df['duration'] < 36)]
+    d = df[(df['duration'] == 36)]
+    e = df[(df['duration'] > 36)]
 
     len(a), len(b), len(c), len(d), len(e)
 
     for i in [a,b,c,d,e]:
-
-        sns.histplot(x= i['Duration'], hue = i['Risk'])
+        sns.histplot(x= i['duration'], hue = i['risk'])
+        plt.title(f" where 1 is low risk", fontsize = 16)
         plt.show()
-
+    
 
 def job_credit_relationship(df):
     sns.barplot(data = df, y = 'credit amount', x = 'job', palette="tab20_r", hue = 'risk')

@@ -35,8 +35,9 @@ def get_german_credit():
 def acquire_german_credit():
 
     df = pd.read_csv('data/german_credit_data.csv', index_col = 0)
+    df.columns = df.columns.str.lower()
+    df['risk'] = df.risk.map({'good':1, 'bad':0})
 
-    
     return df
 
 
@@ -55,7 +56,7 @@ def split_german_credit(df):
 
 def category_adjustments(df):
 
-    df.columns = df.columns.str.lower()
+
     #df['checking account'] = df['checking account'].replace({np.NAN:'unknown'})
     #df['saving accounts'] = df['saving accounts'].replace({np.NAN:'unknown'})
     df['checking account'].fillna('unknown', inplace=True)
@@ -66,7 +67,7 @@ def category_adjustments(df):
             df[col] = df[col].astype('category')
     
     
-    df['risk'] = df.risk.map({'good':1, 'bad':0})
+
     df['sex'] = df.sex.map({'male':1, 'female':0})
     df['job'] = df.job.map({0:'unskilled_nonresident', 1:'unskilled', 2: 'skilled', 3: 'high_skill'})
     df['job'] = df['job'].astype('category')
