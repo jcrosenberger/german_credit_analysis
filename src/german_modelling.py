@@ -68,7 +68,7 @@ def find_best_knn(x_train, x_validate, y_train, y_validate, df=False):
         plt.plot(k_range, train_scores, label='Train')
         plt.plot(k_range, validate_scores, label='Validate')
         plt.legend()
-        plt.xticks([0,5,7,8,9,10,15,20])
+        plt.xticks([0,5,10,15,20])
         plt.show()
 
     else:
@@ -76,6 +76,14 @@ def find_best_knn(x_train, x_validate, y_train, y_validate, df=False):
         scores_df = pd.DataFrame(scores_dict)
         return scores_df
 
+
+def knn_model(x, y, k=12):
+    knn = KNeighborsClassifier(n_neighbors = k)
+    knn.fit(x, y)
+    
+    y_preds = knn.predict(x)
+    
+    return y_preds
 
 
 #########################################################################
@@ -88,7 +96,7 @@ def random_forest_model(x, y):
     rf_classifier = RandomForestClassifier(
         min_samples_leaf=10,
         n_estimators=200,
-        max_depth=10, 
+        max_depth=5, 
         bootstrap=True,
         oob_score=True,
         n_jobs=-1,
@@ -111,7 +119,7 @@ def gradient_booster_model(x, y):
     
     gradient_booster = GradientBoostingClassifier(
         learning_rate=0.1,
-        max_depth = 3,
+        max_depth = 5,
         n_estimators=200)
 
     gradient_booster.fit(x, y)
@@ -170,3 +178,27 @@ def evaluate_classification_model(model, y_train, y_preds, df=False, full= False
 
     if df == True:
         return performance_df
+
+
+def get_models(x_train, y_train, x_validate, y_validate):
+
+
+    rf_y_preds_train = random_forest_model(x_train, y_train)
+    rf_y_preds_val = random_forest_model(x_validate, y_validate)
+
+    gb_y_preds_train= gradient_booster_model(x_train, y_train)
+    gb_y_preds_val = gradient_booster_model(x_validate, y_validate)
+
+    knn_y_preds_train= knn_model(x_train, y_train, k=11)
+    knn_y_preds_val = knn_model(x_validate, y_validate)
+
+
+
+    performance_df = evaluate_classification_model('random_forest', y_train, rf_y_preds_train, df=True)
+    performance_df = performance_df.append(evaluate_classification_model('rf_validate', y_validate, rf_y_preds_val, df=True))
+    performance_df = performance_df.append(evaluate_classification_model('gradient_booster', y_train, gb_y_preds_train, df=True))
+    performance_df = performance_df.append(evaluate_classification_model('gb_validate', y_validate, gb_y_preds_val, df=True))
+    performance_df = performance_df.append(evaluate_classification_model('knn', y_train, knn_y_preds_train, df=True))
+    performance_df = performance_df.append(evaluate_classification_model('knn_validate', y_validate, knn_y_preds_val, df=True))
+    
+    return performance_df

@@ -243,9 +243,9 @@ def baseline(df,var):
     return baseline
 
 
-###########################################################################
-##########       Vizualizing Correlated Variables with Risk      ##########
-###########################################################################
+#################################################################
+ ##########       Vizualizing Features with Risk      ##########
+##################################################################
 def correlate_viz(df, target):
 
     # sets size of the vizualization product
@@ -259,3 +259,35 @@ def correlate_viz(df, target):
 
     # title information
     heatmap.set_title('Features Correlating with \nRisk', fontdict={'fontsize':18}, pad=16);
+
+
+def age_distribution(df):
+    plt.figure(figsize=(10,6))
+    sns.histplot(data=df, x='Age',hue='Risk', kde=True, bins=25, palette='hsv_r')
+    plt.show()
+
+def age_group_risk(df):
+    plt.figure(figsize=(8,5))
+    ax = sns.swarmplot(x=df['age_groups'], y = df['credit amount'], hue = df['risk'])
+    plt.ylabel('Credit per group')
+    plt.show()
+
+def peek_at_risk(df):
+    for col in df.columns:
+        sns.histplot(data = df, x = col, hue = 'risk')
+        plt.show()
+
+
+def plot_duration(df):
+    a = df[(df['Duration'] < 12)]
+    b = df[(df['Duration'] == 12)]
+    c = df[(df['Duration'] > 12) & (df['Duration'] < 36)]
+    d = df[(df['Duration'] == 36)]
+    e = df[(df['Duration'] > 36)]
+
+    len(a), len(b), len(c), len(d), len(e)
+
+    for i in [a,b,c,d,e]:
+
+        sns.histplot(x= i['Duration'], hue = i['Risk'])
+        plt.show()
